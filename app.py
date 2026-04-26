@@ -5,17 +5,16 @@ from io import BytesIO
 import datetime
 import os
 
-# 1. إعدادات التصميم (التركيز على جعل النصوص بيضاء داخل الخانات الداكنة)
+# 1. إعدادات التصميم (توحيد جميع الخانات: خلفية سوداء + نص أبيض)
 st.set_page_config(page_title="بوابة الصحة الرقمية", layout="centered")
 
 st.markdown("""
     <style>
+    /* خلفية الموقع بيضاء */
     .stApp { background-color: #ffffff !important; }
     
-    /* النصوص العامة باللون الأسود */
-    h1, h2, h3, label, p, span, div, .stMarkdown { 
-        color: #000000 !important; 
-    }
+    /* النصوص التعريفية (العناوين) بالأسود */
+    h1, label, p, span, .stMarkdown { color: #000000 !important; font-weight: bold; }
     
     /* تنسيق صورة الطبيب */
     .doc-img {
@@ -27,10 +26,26 @@ st.markdown("""
         margin-bottom: 20px;
     }
 
-    /* 1. جعل النص داخل زر الترسيم باللون الأبيض */
+    /* --- توحيد جميع المدخلات (Inputs) والزر لتكون سوداء بنص أبيض --- */
+    
+    /* 1. خانات النص (الاسم، اللقب، إلخ) */
+    .stTextInput>div>div>input {
+        background-color: #1a1c23 !important;
+        color: #ffffff !important;
+        border: none !important;
+    }
+
+    /* 2. خانة اختيار القسم */
+    .stSelectbox div[data-baseweb="select"] > div {
+        background-color: #1a1c23 !important;
+        color: #ffffff !important;
+        border: none !important;
+    }
+    
+    /* 3. زر الترسيم */
     div.stButton > button {
-        background-color: #1a1c23 !important; /* لون داكن للزر */
-        color: #ffffff !important;           /* نص أبيض ناصع */
+        background-color: #1a1c23 !important;
+        color: #ffffff !important;
         font-weight: bold !important;
         font-size: 20px !important;
         border-radius: 10px !important;
@@ -39,13 +54,7 @@ st.markdown("""
         border: none !important;
     }
 
-    /* 2. جعل النص داخل قائمة اختيار القسم باللون الأبيض */
-    .stSelectbox div[data-baseweb="select"] > div {
-        background-color: #1a1c23 !important; /* خلفية داكنة للخيار */
-        color: #ffffff !important;           /* نص أبيض ناصع */
-    }
-    
-    /* التأكد من ظهور النص الأبيض حتى عند فتح القائمة */
+    /* ضمان ظهور النص الأبيض في القوائم المنسدلة */
     div[data-baseweb="popover"] li {
         color: #ffffff !important;
         background-color: #1a1c23 !important;
@@ -53,10 +62,10 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# دالة حفظ البيانات الآمنة
+# دالة حفظ البيانات
 def save_data_safely(f_name, l_name, id_no, ph, dept, pr, t_id):
     file_name = 'hospital_records.csv'
-    header = ['التاريخ', 'الاسم', 'اللقب', 'الهوية', 'الهاتف', 'القسم', 'المعلوم', 'رقم التذكرة']
+    header = ['التاريخ', 'الاسم', 'الالقب', 'الهوية', 'الهاتف', 'القسم', 'المعلوم', 'رقم التذكرة']
     new_data = [datetime.datetime.now().strftime("%Y-%m-%d %H:%M"), f_name, l_name, id_no, ph, dept, pr, t_id]
     try:
         if not os.path.isfile(file_name):
@@ -72,8 +81,8 @@ def save_data_safely(f_name, l_name, id_no, ph, dept, pr, t_id):
 st.markdown('<img src="https://img.freepik.com/free-photo/smiling-doctor-with-stethoscope-isolated-grey_651396-974.jpg" class="doc-img">', unsafe_allow_html=True)
 st.markdown("<h1 style='text-align: center;'>الصحة الرقمية</h1>", unsafe_allow_html=True)
 
-with st.form("final_style_form"):
-    # الترتيب: اسم -> لقب -> بطاقة تعريف -> هاتف
+with st.form("all_black_fields_form"):
+    # الترتيب الصحيح: اسم -> لقب -> بطاقة تعريف -> هاتف
     first_name = st.text_input("👤 الاسم الأول")
     last_name = st.text_input("👤 اللقب")
     id_card = st.text_input("🪪 رقم بطاقة التعريف")
@@ -81,13 +90,11 @@ with st.form("final_style_form"):
     
     st.divider()
     
-    # قائمة القسم (النص فيها سيكون أبيض الآن)
     dept = st.selectbox("🏥 القسم المطلوب مراجعته", ["الاستعجالي", "طب العيون", "طب الأطفال", "الجراحة العامة"])
     prices = {"الاستعجالي": "15.000", "طب العيون": "10.000", "طب الأطفال": "10.000", "الجراحة العامة": "20.000"}
     
     st.markdown(f"💰 المعلوم المطلوب: **{prices[dept]} DT**")
     
-    # زر الترسيم (النص فيه سيكون أبيض الآن)
     submitted = st.form_submit_button("تأكيد التسجيل واستخراج التذكرة")
 
 if submitted:
@@ -99,7 +106,7 @@ if submitted:
         buf = BytesIO()
         qr_img.save(buf, format="PNG")
         
-        st.success(f"تم تسجيل {first_name} بنجاح!")
+        st.success("تم التسجيل!")
         st.image(buf.getvalue(), width=200)
         st.download_button("📥 تحميل التذكرة", buf.getvalue(), f"Ticket_{t_id}.png", "image/png")
     else:
