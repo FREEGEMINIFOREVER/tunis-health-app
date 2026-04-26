@@ -5,7 +5,7 @@ from io import BytesIO
 import datetime
 import os
 
-# إعدادات التصميم (إجبار الكتابة البيضاء داخل الخانات السوداء)
+# إعدادات التصميم (خلفية بيضاء، خانات سوداء، وزر فاتح كما في الصورة)
 st.set_page_config(page_title="بوابة الصحة الرقمية", layout="centered")
 
 st.markdown("""
@@ -22,32 +22,36 @@ st.markdown("""
         margin-bottom: 20px;
     }
 
-    /* --- الحل النهائي للكتابة البيضاء --- */
-    
-    /* 1. خانات النص (الاسم، اللقب، إلخ) */
+    /* 1. خانات إدخال البيانات - تظل سوداء بنص أبيض */
     .stTextInput>div>div>input {
         background-color: #1a1c23 !important;
-        color: #ffffff !important; /* أبيض ناصع */
-        -webkit-text-fill-color: #ffffff !important; /* لضمان اللون في هواتف أندرويد */
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        border-radius: 10px !important;
     }
 
-    /* 2. خانة القسم (Selectbox) - إصلاح اللون المفقود */
+    /* 2. خانة اختيار القسم - تظل سوداء بنص أبيض */
     div[data-baseweb="select"] > div {
         background-color: #1a1c23 !important;
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
+        border-radius: 10px !important;
     }
 
-    /* 3. زر الترسيم */
+    /* 3. زر الترسيم - تعديل ليصبح بخلفية فاتحة كما في الصورة الأخيرة */
     div.stButton > button {
-        background-color: #1a1c23 !important;
-        color: #ffffff !important;
+        background-color: #f0f2f6 !important; /* خلفية فاتحة مريحة */
+        color: #1a1c23 !important;           /* نص داكن واضح */
+        border: 1px solid #d1d5db !important;
         font-weight: bold !important;
+        font-size: 18px !important;
+        border-radius: 10px !important;
+        height: 3em !important;
+        width: 100% !important;
     }
 
-    /* ضمان ظهور النص الأبيض داخل القائمة المنسدلة عند فتحها */
-    div[data-baseweb="popover"] li, 
-    div[role="listbox"] div {
+    /* تنسيق القوائم المنسدلة */
+    div[data-baseweb="popover"] li {
         color: #ffffff !important;
         background-color: #1a1c23 !important;
     }
@@ -73,7 +77,7 @@ def save_data_safely(f_name, l_name, id_no, ph, dept, pr, t_id):
 st.markdown('<img src="https://img.freepik.com/free-photo/smiling-doctor-with-stethoscope-isolated-grey_651396-974.jpg" class="doc-img">', unsafe_allow_html=True)
 st.markdown("<h1 style='text-align: center;'>الصحة الرقمية</h1>", unsafe_allow_html=True)
 
-with st.form("all_black_fields_final"):
+with st.form("final_form_style"):
     first_name = st.text_input("👤 الاسم الأول")
     last_name = st.text_input("👤 اللقب")
     id_card = st.text_input("🪪 رقم بطاقة التعريف")
@@ -82,6 +86,8 @@ with st.form("all_black_fields_final"):
     dept = st.selectbox("🏥 القسم المطلوب مراجعته", ["الاستعجالي", "طب العيون", "طب الأطفال", "الجراحة العامة"])
     prices = {"الاستعجالي": "15.000", "طب العيون": "10.000", "طب الأطفال": "10.000", "الجراحة العامة": "20.000"}
     st.markdown(f"💰 المعلوم المطلوب: **{prices[dept]} DT**")
+    
+    # الزر الآن سيظهر بالشكل الفاتح المطلوب
     submitted = st.form_submit_button("تأكيد التسجيل واستخراج التذكرة")
 
 if submitted:
