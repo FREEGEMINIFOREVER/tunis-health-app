@@ -5,14 +5,14 @@ from io import BytesIO
 import datetime
 import os
 
-# 1. إعدادات التصميم (خلفية بيضاء ونصوص سوداء واضحة تماماً)
+# 1. إعدادات التصميم (خلفية بيضاء ونصوص سوداء)
 st.set_page_config(page_title="بوابة الصحة الرقمية", layout="centered")
 
 st.markdown("""
     <style>
     .stApp { background-color: #ffffff !important; }
     
-    /* إجبار كافة النصوص على اللون الأسود الواضح */
+    /* إجبار كافة النصوص على اللون الأسود */
     h1, h2, h3, label, p, span, div, .stMarkdown { 
         color: #000000 !important; 
     }
@@ -27,21 +27,28 @@ st.markdown("""
         margin-bottom: 20px;
     }
 
-    /* الزر الأخضر الأسطوري */
+    /* تغيير لون زر الترسيم إلى الأبيض */
     div.stButton > button {
-        background-color: #28a745 !important;
-        color: white !important;
+        background-color: #ffffff !important;
+        color: #000000 !important;
         font-weight: bold !important;
         font-size: 20px !important;
         border-radius: 10px !important;
         height: 3.5em !important;
         width: 100% !important;
-        border: none !important;
+        border: 2px solid #000000 !important;
+    }
+
+    /* تغيير لون خانة السرفيس (Selectbox) إلى الأبيض */
+    .stSelectbox div[data-baseweb="select"] > div {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        border: 1px solid #000000 !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# دالة حفظ البيانات الآمنة
+# دالة حفظ البيانات
 def save_data_safely(f_name, l_name, id_no, ph, dept, pr, t_id):
     file_name = 'hospital_records.csv'
     header = ['التاريخ', 'الاسم', 'اللقب', 'الهوية', 'الهاتف', 'القسم', 'المعلوم', 'رقم التذكرة']
@@ -59,30 +66,24 @@ def save_data_safely(f_name, l_name, id_no, ph, dept, pr, t_id):
 # الواجهة الرئيسية
 st.markdown('<img src="https://img.freepik.com/free-photo/smiling-doctor-with-stethoscope-isolated-grey_651396-974.jpg" class="doc-img">', unsafe_allow_html=True)
 st.markdown("<h1 style='text-align: center;'>الصحة الرقمية</h1>", unsafe_allow_html=True)
-st.markdown("<h3 style='text-align: center;'>نحن هنا لخدمتكم وتسهيل إجراءاتكم</h3>", unsafe_allow_html=True)
 
-with st.form("fixed_order_form"):
-    # الترتيب الذي طلبته أنت بالضبط:
-    # 1. الاسم
+with st.form("final_fixed_form"):
+    # الترتيب الصحيح للخانات
     first_name = st.text_input("👤 الاسم الأول")
-    
-    # 2. اللقب
     last_name = st.text_input("👤 اللقب")
-    
-    # 3. رقم بطاقة التعريف
     id_card = st.text_input("🪪 رقم بطاقة التعريف")
-    
-    # 4. رقم الهاتف
     phone = st.text_input("📞 رقم الهاتف")
     
     st.divider()
     
+    # الخانتين الأخيرتين (أصبحتا باللون الأبيض)
     dept = st.selectbox("🏥 القسم المطلوب مراجعته", ["الاستعجالي", "طب العيون", "طب الأطفال", "الجراحة العامة"])
     prices = {"الاستعجالي": "15.000", "طب العيون": "10.000", "طب الأطفال": "10.000", "الجراحة العامة": "20.000"}
     
     st.markdown(f"💰 المعلوم المطلوب: **{prices[dept]} DT**")
     
-    submitted = st.form_submit_button("تأكيد التسجيل واستخراج التذكرة ✅")
+    # الزر الأبيض
+    submitted = st.form_submit_button("تأكيد التسجيل واستخراج التذكرة")
 
 if submitted:
     if first_name and last_name and id_card:
@@ -93,7 +94,7 @@ if submitted:
         buf = BytesIO()
         qr_img.save(buf, format="PNG")
         
-        st.success(f"ممتاز {first_name}! تم تسجيلك بنجاح.")
+        st.success(f"تم تسجيل {first_name} بنجاح!")
         st.image(buf.getvalue(), width=200)
         st.download_button("📥 تحميل التذكرة", buf.getvalue(), f"Ticket_{t_id}.png", "image/png")
     else:
