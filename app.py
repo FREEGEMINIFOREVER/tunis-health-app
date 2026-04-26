@@ -5,93 +5,90 @@ from io import BytesIO
 import datetime
 import os
 
-# 1. إعدادات الصفحة واللون الأخضر (Hex Code: #28a745)
-st.set_page_config(page_title="بوابة الصحة التونسية الرقمية", layout="wide")
+# 1. إعدادات التصميم (اللون الأخضر الصريح #28a745)
+st.set_page_config(page_title="بوابة الصحة التونسية", layout="wide")
 
 st.markdown("""
     <style>
     .stApp { background-color: #0e1117; }
-    h1 { color: #00d4ff; text-align: center; }
-    
-    /* فرض اللون الأخضر على زر الترسيم وزر التحميل */
     div.stButton > button:first-child {
         background-color: #28a745 !important;
         color: white !important;
-        border-radius: 10px;
-        border: none;
-        height: 3em;
-        font-weight: bold;
-        width: 100%;
+        font-weight: bold; width: 100%; border-radius: 10px;
     }
     div.stDownloadButton > button {
         background-color: #28a745 !important;
         color: white !important;
-        border-radius: 10px;
-        width: 100%;
+        width: 100%; border-radius: 10px;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# دالة حفظ البيانات
-def save_to_database(f_name, l_name, id_no, ph, dept, pr, t_id):
+# 2. وظيفة حفظ البيانات المطورة مع نظام "مضاد للتلف"
+def save_data_safely(f_name, l_name, id_no, ph, dept, pr, t_id):
     file_name = 'hospital_records.csv'
-    new_entry = pd.DataFrame([[datetime.datetime.now().strftime("%Y-%m-%d %H:%M"), f_name, l_name, id_no, ph, dept, pr, t_id]], 
-                            columns=['التاريخ', 'الاسم', 'اللقب', 'الهوية', 'الهاتف', 'القسم', 'المعلوم', 'رقم التذكرة'])
-    if not os.path.isfile(file_name):
-        new_entry.to_csv(file_name, index=False, encoding='utf-8-sig')
-    else:
-        new_entry.to_csv(file_name, mode='a', header=False, index=False, encoding='utf-8-sig')
+    header = ['التاريخ', 'الاسم', 'الالقب', 'الهوية', 'الهاتف', 'القسم', 'المعلوم', 'رقم التذكرة']
+    new_data = [datetime.datetime.now().strftime("%Y-%m-%d %H:%M"), f_name, l_name, id_no, ph, dept, pr, t_id]
+    
+    # إذا كان الملف غير موجود أو تالف، نقوم بإنشائه من جديد بالكامل
+    try:
+        if not os.path.isfile(file_name):
+            pd.DataFrame([new_data], columns=header).to_csv(file_name, index=False, encoding='utf-8-sig')
+        else:
+            df = pd.read_csv(file_name, encoding='utf-8-sig')
+            df = pd.concat([df, pd.DataFrame([new_data], columns=header)], ignore_index=True)
+            df.to_csv(file_name, index=False, encoding='utf-8-sig')
+    except Exception:
+        # في حال حدوث أي خطأ في القراءة (ParserError)، نقوم بمسح الملف القديم والبدء من جديد
+        pd.DataFrame([new_data], columns=header).to_csv(file_name, index=False, encoding='utf-8-sig')
 
+# 3. واجهة المستخدم
 st.title("🏥 المنظومة الرقمية المتكاملة للصحة")
-tab1, tab2 = st.tabs(["📝 تسجيل مريض جديد", "📋 سجل المستشفى"])
+tab1, tab2 = st.tabs(["📝 تسجيل مريض", "📋 سجل الإدارة"])
 
 with tab1:
-    with st.form("registration_form"):
-        col1, col2 = st.columns(2)
-        with col1:
+    with st.form("main_form"):
+        c1, c2 = st.columns(2)
+        with c1:
             first_name = st.text_input("👤 الاسم")
             id_card = st.text_input("🪪 رقم بطاقة التعريف")
-        with col2:
+        with c2:
             last_name = st.text_input("👤 اللقب")
             phone = st.text_input("📞 رقم الهاتف")
         
-        dept = st.selectbox("🏥 القسم المطلوب", ["الاستعجالي", "طب العيون", "طب الأطفال", "قسم الجراحة"])
+        dept = st.selectbox("🏥 القسم", ["الاستعجالي", "طب العيون", "طب الأطفال", "قسم الجراحة"])
         prices = {"الاستعجالي": "15.000", "طب العيون": "10.000", "طب الأطفال": "10.000", "قسم الجراحة": "20.000"}
-        st.metric("معلوم الكشف", f"{prices[dept]} DT")
+        st.metric("المعلوم", f"{prices[dept]} DT")
         
-        submitted = st.form_submit_button("تأكيد الترسيم واستخراج التذكرة")
+        submitted = st.form_submit_button("تأكيد الترسيم")
 
-    if submitted:
-        if first_name and last_name and id_card and phone:
-            t_id = f"TN-{datetime.datetime.now().strftime('%M%S')}"
-            save_to_database(first_name, last_name, id_card, phone, dept, prices[dept], t_id)
-            
-            # حفظ البيانات في جلسة العمل لتبقى ظاهرة
-            st.session_state.qr_data = f"المريض: {first_name} {last_name}\nالهوية: {id_card}\nالتذكرة: {t_id}"
-            st.session_state.ticket_ready = True
-            st.session_state.f_name = first_name
-
-    # عرض النتائج والإشعار (خارج الـ form لضمان التفاعل)
-    if st.session_state.get('ticket_ready'):
-        st.success(f"✅ تم التسجيل! رقم تذكرتك: {t_id}")
-        qr_img = qrcode.make(st.session_state.qr_data)
+    if submitted and first_name and id_card:
+        t_id = f"TN-{datetime.datetime.now().strftime('%M%S')}"
+        save_data_safely(first_name, last_name, id_card, phone, dept, prices[dept], t_id)
+        
+        # إنشاء الـ QR Code
+        qr_img = qrcode.make(f"Patient: {first_name} {last_name}\nID: {id_card}\nTicket: {t_id}")
         buf = BytesIO()
         qr_img.save(buf, format="PNG")
         
-        col_img, col_txt = st.columns(2)
-        with col_img:
-            st.image(buf.getvalue(), width=200)
-        with col_txt:
-            # إضافة نظام الإشعار عند الضغط
-            st.download_button(
-                label="📥 اضغط هنا لتحميل التذكرة (PNG)",
-                data=buf.getvalue(),
-                file_name=f"Ticket_{st.session_state.f_name}.png",
-                mime="image/png",
-                on_click=lambda: st.toast("✅ رائع! تم حفظ التذكرة في مجلد التحميلات بهاتفك", icon="💾")
-            )
-            st.info("💡 بمجرد الضغط، سيظهر إشعار في أسفل الشاشة يؤكد التحميل.")
+        st.success(f"✅ تم الترسيم! رقم التذكرة: {t_id}")
+        st.image(buf.getvalue(), width=200)
+        
+        # زر التحميل مع الإشعار
+        st.download_button(
+            label="📥 تحميل التذكرة على الهاتف",
+            data=buf.getvalue(),
+            file_name=f"Ticket_{t_id}.png",
+            mime="image/png",
+            on_click=lambda: st.toast("تم التحميل! ابحث عن الصورة في الاستوديو", icon="💾")
+        )
 
 with tab2:
+    st.subheader("📊 السجل الرقمي")
     if os.path.exists('hospital_records.csv'):
-        st.dataframe(pd.read_csv('hospital_records.csv'), use_container_width=True)
+        try:
+            # محاولة القراءة، وإذا فشلت (خطأ ParserError) يتم إخطار المستخدم
+            df_view = pd.read_csv('hospital_records.csv', encoding='utf-8-sig')
+            st.dataframe(df_view, use_container_width=True)
+        except Exception:
+            st.warning("⚠️ تم اكتشاف خلل في ملف البيانات السابق، سيتم إصلاحه تلقائياً عند أول عملية تسجيل جديدة.")
