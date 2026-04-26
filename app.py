@@ -1,106 +1,109 @@
 import streamlit as st
 import qrcode
-import pandas as pd
 from io import BytesIO
-import datetime
-import os
 
-# 1. إعدادات الصفحة
-st.set_page_config(page_title="بوابة الصحة الرقمية", layout="centered")
-
-# 2. تصميم CSS مركز ونظيف (الزر الأبيض هو الأولوية)
+# 1. إعدادات التصميم الشاملة (CSS) لتخصيص كل عنصر
 st.markdown("""
     <style>
-    /* خلفية الموقع */
-    .stApp { background-color: #ffffff !important; }
+    /* تنسيق عام للخلفية */
+    .main {
+        background-color: #0e1117;
+    }
     
-    /* النصوص السوداء */
-    h1, label, p, span { color: #000000 !important; font-weight: bold; }
-
-    /* تنسيق الخانات (سوداء بنص أبيض) */
-    .stTextInput input, div[data-baseweb="select"] > div {
-        background-color: #1a1c23 !important;
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-        border: none !important;
-        border-radius: 8px !important;
+    /* توسيط وتنسيق صورة الطبيب */
+    .doctor-container {
+        display: flex;
+        justify-content: center;
+        padding: 20px;
+    }
+    .doctor-img {
+        width: 150px;
+        border-radius: 50%;
+        border: 3px solid #28a745;
+    }
+    
+    /* تخصيص كل خانة إدخال على حدة (الاسم، اللقب، بطاقة التعريف، الهاتف) */
+    .stTextInput input {
+        color: #ffffff !important; /* نص أبيض ناصع */
+        background-color: #1e1e1e !important; /* خلفية داكنة */
+        border: 1px solid #444 !important;
+        border-radius: 10px !important;
     }
 
-    /* --- تنسيق الزر المستهدف (الحل النهائي للرؤية) --- */
+    /* تخصيص خانة اختيار القسم */
+    div[data-baseweb="select"] > div {
+        color: white !important;
+        background-color: #1e1e1e !important;
+        border-radius: 10px !important;
+    }
+
+    /* تنسيق زر الترسيم والاستخلاص (أخضر كما طلبت) */
     div.stButton > button {
-        background-color: #000000 !important; /* خلفية بيضاء ناصعة */
-        color: #ffffff !important;           /* نص أسود فاحم */
-        border: 3px solid #ffffff !important; /* إطار أسود غليظ للوضوح */
-        width: 100% !important;
-        height: 4em !important;
-        font-size: 22px !important;
-        font-weight: 900 !important;
+        background-color: #28a745 !important;
+        color: white !important;
+        font-weight: bold !important;
+        font-size: 18px !important;
         border-radius: 12px !important;
-        box-shadow: 2px 4px 10px rgba(0,0,0,0.2) !important;
+        width: 100%;
+        height: 50px;
+        transition: 0.3s;
+    }
+    div.stButton > button:hover {
+        background-color: #218838 !important;
+        transform: scale(1.02);
     }
 
-    /* إجبار أي نص داخل الزر على السواد التام */
-    div.stButton > button p {
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-        margin: 0 !important;
-    }
-    
-    /* قائمة الأقسام المنسدلة */
-    div[data-baseweb="popover"] li {
-        color: #ffffff !important;
-        background-color: #1a1c23 !important;
+    /* نصوص العناوين بيضاء */
+    label {
+        color: white !important;
+        font-weight: bold !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# 3. وظيفة حفظ البيانات
-def save_data(f_name, l_name, id_no, ph, dept, pr, t_id):
-    file_name = 'hospital_records.csv'
-    header = ['التاريخ', 'الاسم', 'اللقب', 'الهوية', 'الهاتف', 'القسم', 'المعلوم', 'رقم التذكرة']
-    new_record = [datetime.datetime.now().strftime("%Y-%m-%d %H:%M"), f_name, l_name, id_no, ph, dept, pr, t_id]
-    try:
-        df = pd.read_csv(file_name) if os.path.exists(file_name) else pd.DataFrame(columns=header)
-        df = pd.concat([df, pd.DataFrame([new_record], columns=header)], ignore_index=True)
-        df.to_csv(file_name, index=False, encoding='utf-8-sig')
-    except:
-        pass
+# 2. صورة الطبيب في الوسط
+st.markdown('<div class="doctor-container"><img src="https://cdn-icons-png.flaticon.com/512/3844/3844476.png" class="doctor-img"></div>', unsafe_allow_html=True)
+st.markdown("<h2 style='text-align: center; color: white;'>منظومة تسجيل المرضى</h2>", unsafe_allow_html=True)
 
-# 4. واجهة المستخدم
-st.markdown("<h1 style='text-align: center;'>الصحة الرقمية</h1>", unsafe_allow_html=True)
+# 3. الخانات بالترتيب الدقيق الذي طلبته
+st.write("---")
+nome = st.text_input("1. الاسم", placeholder="أدخل الاسم هنا...")
+prenom = st.text_input("2. اللقب", placeholder="أدخل اللقب هنا...")
+cin = st.text_input("3. رقم بطاقة التعريف", placeholder="8 أرقام")
+phone = st.text_input("4. رقم الهاتف", placeholder="+216...")
 
-with st.form("clean_form"):
-    # الخانات السوداء
-    col1, col2 = st.columns(2)
-    with col1:
-        f_name = st.text_input("👤 الاسم الأول")
-    with col2:
-        l_name = st.text_input("👤 اللقب")
+# اختيار القسم مع نص أبيض ناصع
+section = st.selectbox("القسم المطلوب", ["قسم الاستعجالي", "قسم العظام", "قسم القلب", "الجراحة العامة"])
+
+st.write("---")
+
+# 4. منطق الترسيم وتوليد الـ QR Code والإشعارات
+if st.button("الترسيم والاستخلاص"):
+    if nome and prenom and cin and phone:
+        # تجميع البيانات للكود
+        data_to_encode = f"المريض: {nome} {prenom}\nبطاقة تعريف: {cin}\nالقسم: {section}"
         
-    id_card = st.text_input("🪪 رقم بطاقة التعريف")
-    phone = st.text_input("📞 رقم الهاتف")
-    
-    st.divider()
-    
-    # اختيار القسم
-    dept = st.selectbox("🏥 القسم المطلوب مراجعته", ["الاستعجالي", "طب العيون", "طب الأطفال", "الجراحة العامة"])
-    prices = {"الاستعجالي": "15.000", "طب العيون": "10.000", "طب الأطفال": "10.000", "الجراحة العامة": "20.000"}
-    st.markdown(f"💰 المعلوم المطلوب: **{prices[dept]} DT**")
-    
-    # الزر الأبيض (الذي كان غير مرئي سابقاً)
-    submitted = st.form_submit_button("تأكيد التسجيل واستخراج التذكرة")
-
-# 5. معالجة الضغط على الزر
-if submitted:
-    if f_name and l_name and id_card:
-        ticket_id = f"TN-{datetime.datetime.now().strftime('%M%S')}"
-        save_data(f_name, l_name, id_card, phone, dept, prices[dept], ticket_id)
+        # إنشاء الـ QR Code
+        qr = qrcode.QRCode(version=1, box_size=10, border=5)
+        qr.add_data(data_to_encode)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
         
-        qr = qrcode.make(f"ID: {id_card}\nTicket: {ticket_id}")
+        # تحويل الصورة لصيغة يمكن تنزيلها
         buf = BytesIO()
-        qr.save(buf, format="PNG")
+        img.save(buf)
+        byte_im = buf.getvalue()
+
+        # إشعار المريض بالتنزيل (كما طلبت)
+        st.toast(f"✅ تم تنزيل كود الترسيم لهاتفك يا {nome}", icon='📥')
+        st.success("تمت عملية التسجيل بنجاح! يمكنك تحميل الكود أدناه.")
         
-        st.success("تم التسجيل!")
-        st.image(buf.getvalue(), width=200)
+        # زر تنزيل الكود
+        st.download_button(
+            label="📥 اضغط هنا لحفظ كود الترسيم (QR)",
+            data=byte_im,
+            file_name=f"registration_{cin}.png",
+            mime="image/png"
+        )
     else:
-        st.error("يرجى ملء البيانات الأساسية")
+        st.warning("الرجاء التأكد من ملء جميع البيانات قبل الترسيم.")
