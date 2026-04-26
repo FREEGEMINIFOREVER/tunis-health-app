@@ -1,58 +1,78 @@
 import streamlit as st
 import qrcode
 from io import BytesIO
-import random
+import datetime
 
-# إعدادات الصفحة الأساسية لضمان السرعة والتوافق مع الهواتف
-st.set_page_config(page_title="وزارة الصحة - الترسيم الرقمي", page_icon="🏥", layout="centered")
+# إعدادات الصفحة الاحترافية
+st.set_page_config(page_title="بوابة المريض التونسي الرقمية", layout="centered")
 
-# تنسيق المظهر العام (CSS) ليكون احترافياً ويدعم اللغة العربية من اليمين لليسار
+# تصميم الواجهة (CSS) لجعلها تبدو كأنظمة المستشفيات الحديثة
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
-    html, body, [class*="css"] { font-family: 'Cairo', sans-serif; text-align: right; direction: rtl; }
-    .stButton>button { background-color: #007bff; color: white; border-radius: 8px; width: 100%; height: 3em; font-weight: bold; }
-    .ticket-container { border: 2px solid #007bff; border-radius: 15px; padding: 20px; background-color: #f8f9fa; color: black; text-align: center; }
+    .stApp { background-color: #0e1117; }
+    h1 { color: #00d4ff; text-align: center; font-family: 'Arial'; }
+    .stButton>button {
+        width: 100%;
+        background-color: #00d4ff;
+        color: black;
+        font-weight: bold;
+        border-radius: 10px;
+        height: 3em;
+    }
+    .stTextInput>div>div>input { border-radius: 10px; }
     </style>
     """, unsafe_allow_html=True)
 
-# عرض الشعار (رابط مباشر لشعار الوزارة) والعناوين
-st.image("https://seeklogo.com/images/M/ministere-de-la-sante-tunisie-logo-7E61A1D205-seeklogo.com.png", width=120)
-st.title("نظام الترسيم والاستخلاص الموحد")
-st.subheader("بوابة المريض التونسي الرقمية")
+st.title("🏥 بوابة المريض التونسي الرقمية")
+st.write("---")
 
-# استمارة التسجيل الإلكتروني
+# نموذج إدخال البيانات المطور
 with st.container():
-    name = st.text_input("الأسم واللقب")
-    card_id = st.text_input("رقم بطاقة التعريف الوطنية")
-    department = st.selectbox("اختر القسم المطلوب", ["الاستعجالي", "القلب", "العيون", "الأشعة"])
+    name = st.text_input("👤 الاسم واللقب الكامل")
+    id_card = st.text_input("🪪 رقم بطاقة التعريف الوطنية")
     
-    st.info("معلوم الكشف: 15.000 DT (يتم الخصم إلكترونياً)")
-    
-    if st.button("تأكيد الترسيم والحصول على التذكرة"):
-        if name and card_id:
-            # توليد رقم تذكرة عشوائي لضمان التنظيم
-            t_num = random.randint(100, 999)
-            
-            # إنشاء الـ QR Code الذي يحتوي على بيانات المريض
-            qr_content = f"Name: {name} | ID: {card_id} | Dept: {department} | Ticket: {t_num}"
-            img = qrcode.make(qr_content)
-            buf = BytesIO()
-            img.save(buf, format="PNG")
-            
-            # عرض رسالة النجاح والتذكرة الرقمية
-            st.success("تمت عملية الاستخلاص بنجاح!")
-            st.markdown(f"""
-                <div class="ticket-container">
-                    <h2 style="color: #007bff;">تذكرة مراجع رقمية</h2>
-                    <p><b>السيد(ة):</b> {name}</p>
-                    <p><b>القسم:</b> {department}</p>
-                    <p><b>رقم التذكرة:</b> <span style="font-size: 24px;">#{t_num}</span></p>
-                    <hr>
-                    <p>يرجى الاستظهار بالكود أدناه عند مكتب الاستقبال</p>
-                </div>
-            """, unsafe_allow_html=True)
-            st.image(buf.getvalue(), use_column_width=False, width=250)
-            st.balloons() # حركة احتفالية بسيطة
-        else:
-            st.error("الرجاء إدخال كافة البيانات المطلوبة")
+    col1, col2 = st.columns(2)
+    with col1:
+        dept = st.selectbox("🏥 القسم المطلوب", 
+                            ["الاستعجالي", "طب العيون", "طب الأطفال", "قسم الجراحة", "الأمراض الباطنية"])
+    with col2:
+        # نظام تسعير آلي بناءً على القسم
+        prices = {"الاستعجالي": "15.000", "طب العيون": "10.000", "طب الأطفال": "10.000", "قسم الجراحة": "20.000", "الأمراض الباطنية": "12.000"}
+        st.metric("معلوم الكشف", f"{prices[dept]} DT")
+
+    st.write("---")
+    submitted = st.button("تأكيد الترسيم واستخراج التذكرة")
+
+if submitted:
+    if name and id_card:
+        # إنشاء معرف فريد للتذكرة
+        timestamp = datetime.datetime.now().strftime("%y%m%d%H%M")
+        ticket_id = f"T-TN-{timestamp}-{id_card[-3:]}"
+        
+        # تحضير بيانات الـ QR المتقدمة
+        qr_content = f"المؤسسة: وزارة الصحة التونسية\nالمريض: {name}\nالهوية: {id_card}\nالقسم: {dept}\nالمرجع: {ticket_id}"
+        
+        # توليد الـ QR Code
+        qr = qrcode.QRCode(version=1, box_size=10, border=4)
+        qr.add_data(qr_content)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+        
+        # حفظ الصورة في الذاكرة للتحميل
+        buf = BytesIO()
+        img.save(buf, format="PNG")
+        byte_im = buf.getvalue()
+
+        # عرض النتائج للمستخدم
+        st.success(f"✅ تم تأكيد موعدك بنجاح! رقم المرجع: {ticket_id}")
+        st.image(byte_im, caption="امسح الرمز عند وصولك للمستشفى", width=300)
+        
+        # زر التحميل الفوري
+        st.download_button(
+            label="📥 تحميل التذكرة الرقمية (PNG)",
+            data=byte_im,
+            file_name=f"Ticket_{name}.png",
+            mime="image/png"
+        )
+    else:
+        st.error("⚠️ يرجى التأكد من ملء جميع الخانات")
