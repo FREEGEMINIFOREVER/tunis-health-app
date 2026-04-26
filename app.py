@@ -28,9 +28,9 @@ st.markdown("""
 
     /* --- تنسيق الزر المستهدف (الحل النهائي للرؤية) --- */
     div.stButton > button {
-        background-color: #ffffff !important; /* خلفية بيضاء ناصعة */
-        color: #000000 !important;           /* نص أسود فاحم */
-        border: 3px solid #000000 !important; /* إطار أسود غليظ للوضوح */
+        background-color: #000000 !important; /* خلفية بيضاء ناصعة */
+        color: #ffffff !important;           /* نص أسود فاحم */
+        border: 3px solid #ffffff !important; /* إطار أسود غليظ للوضوح */
         width: 100% !important;
         height: 4em !important;
         font-size: 22px !important;
@@ -41,8 +41,8 @@ st.markdown("""
 
     /* إجبار أي نص داخل الزر على السواد التام */
     div.stButton > button p {
-        color: #000000 !important;
-        -webkit-text-fill-color: #000000 !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
         margin: 0 !important;
     }
     
