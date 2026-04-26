@@ -5,7 +5,7 @@ from io import BytesIO
 import datetime
 import os
 
-# إعدادات التصميم (التركيز على بياض النص في الزر)
+# إعدادات التصميم الصارمة (إجبار بياض النص)
 st.set_page_config(page_title="بوابة الصحة الرقمية", layout="centered")
 
 st.markdown("""
@@ -14,43 +14,37 @@ st.markdown("""
     h1, label, p, span, .stMarkdown { color: #000000 !important; font-weight: bold; }
     
     .doc-img {
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
-        width: 300px;
-        border-radius: 15px;
-        margin-bottom: 20px;
+        display: block; margin-left: auto; margin-right: auto;
+        width: 300px; border-radius: 15px; margin-bottom: 20px;
     }
 
-    /* 1. خانات إدخال البيانات - خلفية سوداء ونص أبيض */
-    .stTextInput>div>div>input {
+    /* --- القاعدة الحديدية للنص الأبيض --- */
+    
+    /* 1. جميع المدخلات (الاسم، الهاتف، القسم) */
+    .stTextInput input, .stSelectbox div[data-baseweb="select"] {
         background-color: #1a1c23 !important;
         color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important; /* للأندرويد والايفون */
     }
 
-    /* 2. خانة اختيار القسم - خلفية سوداء ونص أبيض */
-    div[data-baseweb="select"] > div {
+    /* 2. الزر (تأكيد التسجيل) - الحل النهائي */
+    button[kind="primaryFormSubmit"], .stButton > button {
         background-color: #1a1c23 !important;
-        color: #ffffff !important;
-        -webkit-text-fill-color: #ffffff !important;
-    }
-
-    /* 3. الزر المطلوب - خلفية داكنة مع نص أبيض ناصع جداً */
-    div.stButton > button {
-        background-color: #1a1c23 !important;
-        color: #ffffff !important;           /* أبيض ناصع */
-        -webkit-text-fill-color: #ffffff !important; /* إجبار اللون الأبيض في الهواتف */
-        font-weight: 900 !important;         /* خط عريض للوضوح */
-        font-size: 20px !important;
-        border-radius: 10px !important;
-        height: 3.5em !important;
-        width: 100% !important;
         border: none !important;
-        text-shadow: 0px 0px 5px rgba(255,255,255,0.2); /* لمسة بريق للبياض */
+        width: 100% !important;
+        height: 3.5em !important;
+        border-radius: 10px !important;
     }
 
-    /* ضمان النص الأبيض عند فتح قائمة الأقسام */
+    /* إجبار النص داخل الزر على البياض مهما حدث */
+    button[kind="primaryFormSubmit"] p, .stButton > button p, .stButton > button div {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        font-weight: bold !important;
+        font-size: 20px !important;
+    }
+
+    /* قائمة الأقسام عند الفتح */
     div[data-baseweb="popover"] li {
         color: #ffffff !important;
         background-color: #1a1c23 !important;
@@ -73,25 +67,21 @@ def save_data_safely(f_name, l_name, id_no, ph, dept, pr, t_id):
     except:
         pd.DataFrame([new_data], columns=header).to_csv(file_name, index=False, encoding='utf-8-sig')
 
-# الواجهة الرئيسية
+# الواجهة
 st.markdown('<img src="https://img.freepik.com/free-photo/smiling-doctor-with-stethoscope-isolated-grey_651396-974.jpg" class="doc-img">', unsafe_allow_html=True)
 st.markdown("<h1 style='text-align: center;'>الصحة الرقمية</h1>", unsafe_allow_html=True)
 
-with st.form("final_white_text_form"):
-    # الترتيب المطلوب: اسم، لقب، تعريف، هاتف
+with st.form("ultimate_fix_form"):
     first_name = st.text_input("👤 الاسم الأول")
     last_name = st.text_input("👤 اللقب")
     id_card = st.text_input("🪪 رقم بطاقة التعريف")
     phone = st.text_input("📞 رقم الهاتف")
-    
     st.divider()
-    
     dept = st.selectbox("🏥 القسم المطلوب مراجعته", ["الاستعجالي", "طب العيون", "طب الأطفال", "الجراحة العامة"])
     prices = {"الاستعجالي": "15.000", "طب العيون": "10.000", "طب الأطفال": "10.000", "الجراحة العامة": "20.000"}
-    
     st.markdown(f"💰 المعلوم المطلوب: **{prices[dept]} DT**")
     
-    # الزر الذي سيظهر بنص أبيض ناصع
+    # الزر الصارم
     submitted = st.form_submit_button("تأكيد التسجيل واستخراج التذكرة")
 
 if submitted:
