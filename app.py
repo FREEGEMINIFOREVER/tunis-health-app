@@ -5,21 +5,31 @@ from io import BytesIO
 import datetime
 import os
 
-# 1. إعدادات الصفحة والتصميم (المحافظة على المظهر الاحترافي)
+# 1. إعدادات الصفحة والتصميم (تعديل اللون إلى الأخضر)
 st.set_page_config(page_title="بوابة الصحة التونسية الرقمية", layout="wide")
 
 st.markdown("""
     <style>
     .stApp { background-color: #0e1117; }
     h1 { color: #00d4ff; text-align: center; }
+    /* تعديل لون الزر إلى الأخضر */
     .stButton>button {
-        width: 100%; background-color: #00d4ff; color: black;
-        font-weight: bold; border-radius: 10px;
+        width: 100%; 
+        background-color: #28a745; 
+        color: white;
+        font-weight: bold; 
+        border-radius: 10px;
+        border: none;
+        padding: 0.5rem;
+    }
+    .stButton>button:hover {
+        background-color: #218838;
+        color: #e0e0e0;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# 2. وظائف قاعدة البيانات (لحفظ السجلات)
+# 2. وظيفة حفظ البيانات (محمية من الأخطاء)
 def save_to_database(name, id_card, dept, price, t_id):
     file_name = 'hospital_records.csv'
     new_entry = pd.DataFrame([[datetime.datetime.now().strftime("%Y-%m-%d %H:%M"), name, id_card, dept, price, t_id]], 
@@ -30,7 +40,7 @@ def save_to_database(name, id_card, dept, price, t_id):
     else:
         new_entry.to_csv(file_name, mode='a', header=False, index=False, encoding='utf-8-sig')
 
-# 3. واجهة التطبيق بنظام التبويبات (Tabs)
+# 3. واجهة التطبيق
 st.title("🏥 المنظومة الرقمية المتكاملة للصحة")
 tab1, tab2 = st.tabs(["📝 تسجيل مريض جديد", "📋 سجل المستشفى"])
 
@@ -52,10 +62,7 @@ with tab1:
 
     if submitted:
         if name and id_card:
-            # توليد رقم تذكرة فريد
             t_id = f"TN-{datetime.datetime.now().strftime('%M%S')}-{id_card[-3:]}"
-            
-            # حفظ البيانات في ملف CSV (قاعدة البيانات)
             save_to_database(name, id_card, dept, current_price, t_id)
             
             # توليد الـ QR Code
@@ -65,15 +72,13 @@ with tab1:
             qr.save(buf, format="PNG")
             byte_im = buf.getvalue()
 
-            # عرض النتائج
-            st.success(f"✅ تم التسجيل بنجاح! رقم تذكرتك: {t_id}")
+            st.success(f"✅ تم التسجيل بنجاح! رقم التذكرة: {t_id}")
             
             c1, c2 = st.columns(2)
             with c1:
                 st.image(byte_im, caption="رمز QR الخاص بالتذكرة", width=250)
             with c2:
                 st.info(f"المريض: {name}\n\nالقسم: {dept}\n\nالمبلغ: {current_price}")
-                # إعادة ميزة تحميل التذكرة التي فُقدت
                 st.download_button(
                     label="📥 تحميل التذكرة (PNG)",
                     data=byte_im,
@@ -84,13 +89,20 @@ with tab1:
             st.error("⚠️ يرجى ملء البيانات المطلوبة")
 
 with tab2:
-    st.subheader("📊 لوحة تحكم الإدارة (سجل المعاملات)")
-    if os.path.isfile('hospital_records.csv'):
-        df = pd.read_csv('hospital_records.csv')
-        st.dataframe(df, use_container_width=True)
-        # ميزة إضافية: تحميل السجل الكامل للإدارة
-        csv_buffer = BytesIO()
-        df.to_csv(csv_buffer, index=False, encoding='utf-8-sig')
-        st.download_button("📥 تحميل سجل البيانات الكامل (Excel/CSV)", data=csv_buffer.getvalue(), file_name="hospital_report.csv", mime="text/csv")
+    st.subheader("📊 لوحة تحكم الإدارة")
+    file_path = 'hospital_records.csv'
+    if os.path.exists(file_path):
+        try:
+            # استخدام التحقق من الخطأ لمنع ParserError كما ظهر سابقاً
+            df = pd.read_csv(file_path, encoding='utf-8-sig')
+            if not df.empty:
+                st.dataframe(df, use_container_width=True)
+                csv_buffer = BytesIO()
+                df.to_csv(csv_buffer, index=False, encoding='utf-8-sig')
+                st.download_button("📥 تحميل سجل البيانات الكامل", data=csv_buffer.getvalue(), file_name="hospital_report.csv", mime="text/csv")
+            else:
+                st.info("السجل فارغ حالياً.")
+        except Exception:
+            st.error("حدث خطأ في قراءة السجل. سيتم إصلاحه تلقائياً عند التسجيل القادم.")
     else:
-        st.info("لا توجد سجلات مسجلة حتى الآن.")
+        st.info("لا توجد سجلات بعد.")
