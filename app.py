@@ -5,19 +5,19 @@ from io import BytesIO
 import datetime
 import os
 
-# 1. إعدادات التصميم (خلفية بيضاء ونصوص سوداء)
+# 1. إعدادات التصميم (التركيز على جعل النصوص بيضاء داخل الخانات الداكنة)
 st.set_page_config(page_title="بوابة الصحة الرقمية", layout="centered")
 
 st.markdown("""
     <style>
     .stApp { background-color: #ffffff !important; }
     
-    /* إجبار كافة النصوص على اللون الأسود */
+    /* النصوص العامة باللون الأسود */
     h1, h2, h3, label, p, span, div, .stMarkdown { 
         color: #000000 !important; 
     }
     
-    /* تنسيق الصورة */
+    /* تنسيق صورة الطبيب */
     .doc-img {
         display: block;
         margin-left: auto;
@@ -27,28 +27,33 @@ st.markdown("""
         margin-bottom: 20px;
     }
 
-    /* تغيير لون زر الترسيم إلى الأبيض */
+    /* 1. جعل النص داخل زر الترسيم باللون الأبيض */
     div.stButton > button {
-        background-color: #ffffff !important;
-        color: #000000 !important;
+        background-color: #1a1c23 !important; /* لون داكن للزر */
+        color: #ffffff !important;           /* نص أبيض ناصع */
         font-weight: bold !important;
         font-size: 20px !important;
         border-radius: 10px !important;
         height: 3.5em !important;
         width: 100% !important;
-        border: 2px solid #000000 !important;
+        border: none !important;
     }
 
-    /* تغيير لون خانة السرفيس (Selectbox) إلى الأبيض */
+    /* 2. جعل النص داخل قائمة اختيار القسم باللون الأبيض */
     .stSelectbox div[data-baseweb="select"] > div {
-        background-color: #ffffff !important;
-        color: #000000 !important;
-        border: 1px solid #000000 !important;
+        background-color: #1a1c23 !important; /* خلفية داكنة للخيار */
+        color: #ffffff !important;           /* نص أبيض ناصع */
+    }
+    
+    /* التأكد من ظهور النص الأبيض حتى عند فتح القائمة */
+    div[data-baseweb="popover"] li {
+        color: #ffffff !important;
+        background-color: #1a1c23 !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# دالة حفظ البيانات
+# دالة حفظ البيانات الآمنة
 def save_data_safely(f_name, l_name, id_no, ph, dept, pr, t_id):
     file_name = 'hospital_records.csv'
     header = ['التاريخ', 'الاسم', 'اللقب', 'الهوية', 'الهاتف', 'القسم', 'المعلوم', 'رقم التذكرة']
@@ -67,8 +72,8 @@ def save_data_safely(f_name, l_name, id_no, ph, dept, pr, t_id):
 st.markdown('<img src="https://img.freepik.com/free-photo/smiling-doctor-with-stethoscope-isolated-grey_651396-974.jpg" class="doc-img">', unsafe_allow_html=True)
 st.markdown("<h1 style='text-align: center;'>الصحة الرقمية</h1>", unsafe_allow_html=True)
 
-with st.form("final_fixed_form"):
-    # الترتيب الصحيح للخانات
+with st.form("final_style_form"):
+    # الترتيب: اسم -> لقب -> بطاقة تعريف -> هاتف
     first_name = st.text_input("👤 الاسم الأول")
     last_name = st.text_input("👤 اللقب")
     id_card = st.text_input("🪪 رقم بطاقة التعريف")
@@ -76,13 +81,13 @@ with st.form("final_fixed_form"):
     
     st.divider()
     
-    # الخانتين الأخيرتين (أصبحتا باللون الأبيض)
+    # قائمة القسم (النص فيها سيكون أبيض الآن)
     dept = st.selectbox("🏥 القسم المطلوب مراجعته", ["الاستعجالي", "طب العيون", "طب الأطفال", "الجراحة العامة"])
     prices = {"الاستعجالي": "15.000", "طب العيون": "10.000", "طب الأطفال": "10.000", "الجراحة العامة": "20.000"}
     
     st.markdown(f"💰 المعلوم المطلوب: **{prices[dept]} DT**")
     
-    # الزر الأبيض
+    # زر الترسيم (النص فيه سيكون أبيض الآن)
     submitted = st.form_submit_button("تأكيد التسجيل واستخراج التذكرة")
 
 if submitted:
